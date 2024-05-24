@@ -1,0 +1,51 @@
+---
+title: "How to make a Gantt diagram with ggplot"
+author: "Clémentine Cottineau"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Import data
+
+```{r, warning=FALSE, message=F}
+library(tidyverse)
+library(lubridate)
+
+data <- read_csv("data/SI_InequalityCities.csv") |>
+  mutate(start = ymd(paste0(start,"01-01")), 
+         end = ymd(paste0(end,"01-01"))) |>
+  arrange(desc(end)) 
+
+head(data)
+
+```
+
+## Transform into long format
+
+```{r}
+data_long <- data |>
+  pivot_longer(cols=c("start", "end"),
+            names_to="date_type",
+            values_to = "date") 
+
+head(data_long)
+```
+
+## Create Gantt diagram
+
+```{r, warning=FALSE, message=F}
+
+ggplot(data_long, aes(x=fct_inorder(author), y=date, colour=typineq)) +
+  geom_line(size=6) + labs(colour = "Sprectrum \nof inequality \naddressed") +
+  scale_colour_manual(values = c("#C2B280", "orange", "firebrick1")) +
+  ylab("Temporal coverage of data") + xlab("First Author") +
+  coord_flip() 
+```
+
+*Source: parts of the code come from this [tutorial](https://jtr13.github.io/cc19/gantt-charts.html)*
